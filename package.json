@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
+    "generate-api": "npm run fetch-swagger && swagger-typescript-api generate -p ./swagger.json -o ./src/api -n Api --axios",
+    "fetch-swagger": "curl -o swagger.json http://localhost:5000/swagger/v1/swagger.json",
     "format": "oxfmt src/"
   },
   "dependencies": {
@@ -21,8 +23,10 @@
     "@types/node": "^24.12.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/tsconfig": "^0.9.1",
+    "naive-ui": "^2.44.1",
     "npm-run-all2": "^8.0.4",
     "oxfmt": "^0.42.0",
+    "swagger-typescript-api": "^13.6.10",
     "typescript": "~6.0.0",
     "vite": "^8.0.3",
     "vite-plugin-vue-devtools": "^8.1.1",

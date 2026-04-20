@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: taskmanager-db
+    environment:
+      POSTGRES_USER: taskmanager
+      POSTGRES_PASSWORD: taskmanager_secret
+      POSTGRES_DB: taskmanager
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskmanager"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ghcr.io/nuadolos/task-manager:11d1f9b
+    container_name: taskmanager-api
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=taskmanager;Username=taskmanager;Password=taskmanager_secret;Timeout=15;SSL Mode=Prefer;Trust Server Certificate=true
+      - Jwt__SecretKey=SuperSecretKeyForJwtTokenGeneration12345!
+      - Jwt__Issuer=TaskManager
+      - Jwt__Audience=TaskManagerApi
+      - Jwt__ExpiryMinutes=60
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
