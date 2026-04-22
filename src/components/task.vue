@@ -13,25 +13,40 @@
 
         <template #footer>
             <div class="card-footer">
-                <n-button size="small" class="card-btn" @click="updateTask">Редакт.</n-button>
+                <n-button size="small" class="card-btn" @click="openEditModal">Редакт.</n-button>
                 <n-button size="small" type="error" class="card-btn" @click="deleteTask">Удалить</n-button>
             </div>
         </template>
     </n-card>
+
+  
+    <EditTaskModal
+        :show="showEditModal"
+        :task="task"
+        @update:show="showEditModal = $event"
+        @save="saveTask"
+    />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { NCard, NButton, useMessage } from 'naive-ui'
-import type { Task } from '@/types/task.types'
+import type { TaskDto } from '@/api/Api'
+import EditTaskModal from './editTaskModal.vue'
 
 export default defineComponent({
     name: "TaskCard",
-    components: { NCard, NButton },
+    components: { NCard, NButton, EditTaskModal },
     props: {
         task: {
-            type: Object as () => Task,
+            type: Object as () => TaskDto,
             required: true
+        }
+    },
+    emits: ['deleteTask', 'update-task'],
+    data() {
+        return {
+            showEditModal: false
         }
     },
     methods: {
@@ -41,17 +56,20 @@ export default defineComponent({
         },
         getStatusText(status: string) {
             const statusMap: Record<string, string> = {
-                todo: 'К выполнению',
-                in_progress: 'В работе',
-                done: 'Выполнено'
+                Todo: 'К выполнению',
+                InProgress: 'В работе',
+                Done: 'Выполнено'
             }
             return statusMap[status] || status
         },
-        updateTask(){
-            
+        openEditModal() {
+            this.showEditModal = true
+        },
+        saveTask(formData: any) {
+            this.$emit('update-task', { ...this.task, ...formData })
+            this.showEditModal = false
         },
     },
-    emits: ['deleteTask'],
 })
 </script>
 <style>
@@ -92,17 +110,17 @@ export default defineComponent({
     white-space: nowrap;
 }
 
-.status-todo {
+.status-Todo {
     background-color: #f0f0f0;
     color: #666;
 }
 
-.status-in_progress {
+.status-InProgress {
     background-color: #e6f7ff;
     color: #1890ff;
 }
 
-.status-done {
+.status-Done {
     background-color: #ebfadb;
     color: #54bd20;
 }

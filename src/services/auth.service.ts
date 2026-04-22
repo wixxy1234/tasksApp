@@ -1,21 +1,45 @@
-import { api } from "./api";
+import { Api } from "@/api/Api";
+import type { LoginDto, RegisterDto, AuthResponseDto } from "@/api/Api";
+
+function getToken(): string | null {
+    return localStorage.getItem("token");
+}
+
+function securityWorker() {
+    const token = getToken();
+    if (token) {
+        return {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        };
+    }
+    return {};
+}
+
+const apiClient = new Api({
+    baseURL: "",
+    securityWorker,
+});
+
+const publicApiClient = new Api({ baseURL: "" });
 
 export const authService = {
-    login(email: string, password: string){
-        // return api.post('/auth/login', {email, password})
-
-        return {
-        token: 'mock-token-123',
-        user: { id: 1, email, role: 'USER' }
-        }
+    async login(email: string, password: string): Promise<AuthResponseDto> {
+        const data: LoginDto = { email, password };
+        const response = await publicApiClient.api.authLoginCreate(data);
+        return response.data;
     },
-    async register(email: string, password: string) {
-        // return api.post('/auth/register', {email, password})
 
-        return {
-            token: 'mock-token-register-123',
-            user: { id: 2, email, role: 'USER' }
-        }
+    async register(email: string, password: string): Promise<AuthResponseDto> {
+        const data: RegisterDto = { email, password };
+        const response = await publicApiClient.api.authRegisterCreate(data);
+        return response.data;
     },
-    logout(){} // cделать позже
-}
+
+    logout() {
+        localStorage.removeItem("token");
+    },
+};
+
+export const tasksApiClient = apiClient; 

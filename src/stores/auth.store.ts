@@ -28,13 +28,15 @@ export const useAuthStore = defineStore('auth', {
                 this.token = response.token
                 this.user = response.user
 
-                localStorage.setItem('token', response.token)
+                if (response.token) {
+                    localStorage.setItem('token', response.token)
+                }
 
                 console.log('Успешный вход: ', response.user)
 
                 return true
-            } catch (error){
-                console.log('Ошибка входа: ', error)
+            } catch (error: any){
+                console.log('Ошибка входа: ', error?.response?.data || error)
 
                 return false
             } finally {
@@ -50,14 +52,16 @@ export const useAuthStore = defineStore('auth', {
                 this.token = response.token
                 this.user = response.user
 
-                localStorage.setItem('token', response.token)
+                if (response.token) {
+                    localStorage.setItem('token', response.token)
+                }
 
                 console.log('Успешная регистрация:', this.user)
 
                 return true
 
-            } catch (error) {
-                console.log('Ошибка регистрации:', error)
+            } catch (error: any) {
+                console.log('Ошибка регистрации:', error?.response?.data || error)
                 return false
             } finally {
                 this.setLoading(false)

@@ -1,111 +1,46 @@
-import type { CreateTask, Task, TaskList, TaskStatus, UpdateTask } from "@/types/task.types";
-import { api } from "./api";
-
-
-
-const mockTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Изучить Vue 3',
-    description: 'Понять Composition API и Options API',
-    status: 'in_progress',
-    projectId: '1',
-    assigneeId: '1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    completedAt: ''
-  },
-  {
-    id: '2',
-    title: 'Настроить Pinia',
-    description: 'Создать store для авторизации',
-    status: 'todo',
-    projectId: '1',
-    assigneeId: '1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    completedAt: ''
-  },
-  {
-    id: '3',
-    title: 'Сделать таблицу задач',
-    description: 'Реализовать TaskTable компонент',
-    status: 'done',
-    projectId: '2',
-    assigneeId: '1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    completedAt: new Date().toISOString()
-  }
-]
-
-
+import type { 
+    CreateTaskDto, 
+    TaskDto, 
+    TaskListDto, 
+    UpdateTaskDto, 
+    TaskStatusDto,
+    UpdateTaskStatusDto 
+} from "@/api/Api";
+import { tasksApiClient } from "./auth.service";
 
 export const taskService = {
-    getTasks(params?: {
-        status?: TaskStatus
-        projectId?: string
-        limit?: number
-        offset?: number
-    }) {
-        // return api.get('/tasks', params) as Promise<TaskList>
-
-        return Promise.resolve(mockTasks)
+    async getTasks(params?: {
+        status?: TaskStatusDto;
+        projectId?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<TaskListDto> {
+        const response = await tasksApiClient.api.tasksList(params);
+        return response.data;
     },
 
-    getTaskById(id: string){
-        return api.get(`/tasks/${id}`)
+    async getTaskById(id: string): Promise<TaskDto> {
+        const response = await tasksApiClient.api.tasksDetail(id);
+        return response.data;
     },
 
-    createTask(data: CreateTask){
-        // return api.post('/tasks', data)
-
-        const newTask: Task = {
-            id: String(Date.now()),
-            ...data,
-            status: 'todo',
-            assigneeId: '1',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            completedAt: ''
-            }
-        mockTasks.push(newTask)
-        return Promise.resolve(newTask)
+    async createTask(data: CreateTaskDto): Promise<TaskDto> {
+        const response = await tasksApiClient.api.tasksCreate(data);
+        return response.data;
     },
 
-    updateTask(id: string, data: UpdateTask ){
-        // return api.put(`/tasks/${id}`, data)
-
-        const index = mockTasks.findIndex(task => task.id === id)
-        if (index === -1) {
-            return Promise.reject('Задача не найдена')
-        }
-        
-        // Временно используем any для обхода строгой типизации
-        const currentTask: any = mockTasks[index]
-        const updatedData: any = data
-        
-        mockTasks[index] = {
-            ...currentTask,
-            ...updatedData,
-            updatedAt: new Date().toISOString()
-        }
-        
-        return Promise.resolve(mockTasks[index] as Task)
+    async updateTask(id: string, data: UpdateTaskDto): Promise<TaskDto> {
+        const response = await tasksApiClient.api.tasksUpdate(id, data);
+        return response.data;
     },
 
-    deleteTask(id: string){
-        // return api.delete(`/tasks/${id}`)
-
-        const index = mockTasks.findIndex(task => task.id === id)
-        if (index === -1) {
-            return Promise.reject('Задача не найдена')
-        }
-        mockTasks.splice(index, 1)
-        return Promise.resolve()
+    async deleteTask(id: string): Promise<void> {
+        await tasksApiClient.api.tasksDelete(id);
     },
 
-    updateTaskStatus(id: string, status: TaskStatus){
-        return api.put(`/tasks/${id}/status`, {status})
-    }
-}
+    async updateTaskStatus(id: string, status: TaskStatusDto): Promise<TaskDto> {
+        const data: UpdateTaskStatusDto = { status };
+        const response = await tasksApiClient.api.tasksStatusPartialUpdate(id, data);
+        return response.data;
+    },
+};
