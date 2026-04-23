@@ -6,7 +6,7 @@ import type {
     TaskStatusDto,
     UpdateTaskStatusDto 
 } from "@/api/Api";
-import { tasksApiClient } from "./auth.service";
+import { apiClient } from './apiClient'
 
 export const taskService = {
     async getTasks(params?: {
@@ -15,32 +15,32 @@ export const taskService = {
         limit?: number;
         offset?: number;
     }): Promise<TaskListDto> {
-        const response = await tasksApiClient.api.tasksList(params);
+        const response = await apiClient.api.tasksList(params);
         return response.data;
     },
 
     async getTaskById(id: string): Promise<TaskDto> {
-        const response = await tasksApiClient.api.tasksDetail(id);
+        const response = await apiClient.api.tasksDetail(id);
         return response.data;
     },
 
     async createTask(data: CreateTaskDto): Promise<TaskDto> {
-        const response = await tasksApiClient.api.tasksCreate(data);
+        const response = await apiClient.api.tasksCreate(data);
         return response.data;
     },
 
     async updateTask(id: string, data: UpdateTaskDto): Promise<TaskDto> {
-        const response = await tasksApiClient.api.tasksUpdate(id, data);
+        const response = await apiClient.api.tasksUpdate(id, data);
         return response.data;
     },
 
     async deleteTask(id: string): Promise<void> {
-        await tasksApiClient.api.tasksDelete(id);
+        await apiClient.api.tasksDelete(id);
     },
 
     async updateTaskStatus(id: string, status: TaskStatusDto): Promise<TaskDto> {
         const data: UpdateTaskStatusDto = { status };
-        const response = await tasksApiClient.api.tasksStatusPartialUpdate(id, data);
+        const response = await apiClient.api.tasksStatusPartialUpdate(id, data);
         return response.data;
     },
 };

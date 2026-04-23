@@ -11,6 +11,9 @@
             <n-form-item label="Статус задачи" path="status">
                 <n-select v-model:value="formData.status" :options="statusOptions" />
             </n-form-item>
+            <n-form-item label="Проект" path="projectId">
+                <n-select v-model:value="formData.projectId" :options="projectOptions" placeholder="Без проекта" clearable />
+            </n-form-item>
         </n-form>
 
         <template #footer>
@@ -25,14 +28,15 @@
 <script lang="ts">
 import { defineComponent, watch } from 'vue'
 import { NModal, NForm, NFormItem, NInput, NSelect, NButton, type FormRules } from 'naive-ui'
-import { TaskStatusDto, type TaskDto } from '@/api/Api'
+import { TaskStatusDto, type ProjectDto, type TaskDto } from '@/api/Api'
 
 export default defineComponent({
     name: 'EditTaskModal',
     components: { NModal, NForm, NFormItem, NInput, NSelect, NButton },
     props: {
         show: { type: Boolean, required: true },
-        task: { type: Object as () => TaskDto, required: true }
+        task: { type: Object as () => TaskDto, required: true },
+        projects: { type: Array as () => ProjectDto[], required: true },
     },
     emits: ['update:show', 'save'],
     data() {
@@ -40,7 +44,8 @@ export default defineComponent({
             formData: {
                 title: '',
                 description: '',
-                status: '' as any
+                status: '' as any,
+                projectId: null as string | null,
             },
             statusOptions: Object.values(TaskStatusDto).map(s => ({ label: s, value: s }))
         }
@@ -52,6 +57,7 @@ export default defineComponent({
                 this.formData.title = newTask.title || ''
                 this.formData.description = newTask.description || ''
                 this.formData.status = newTask.status
+                this.formData.projectId = newTask.projectId || null
             }
         }
     },
@@ -60,7 +66,10 @@ export default defineComponent({
             return {
                 title: [{ required: true, message: 'Введите название', trigger: 'blur' }]
             }
-        }
+        },
+        projectOptions(){
+            return this.projects.map(p => ({ label: p.name, value: p.id }))
+        },
     },
     methods: {
         async save() {

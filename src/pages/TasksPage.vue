@@ -19,7 +19,7 @@
         </TaskCard>
     </div>
 
-    <AddtaskModal :isOpen="openAddTaskModal" @update:show="openAddTaskModal = $event" @save-new-task="createNewTask"></AddtaskModal>
+    <AddtaskModal :isOpen="openAddTaskModal" :projects="projectStore.projects" @update:show="openAddTaskModal = $event" @save-new-task="createNewTask"></AddtaskModal>
 
 </template>
 
@@ -28,6 +28,7 @@ import { defineComponent } from 'vue'
 import { TaskStatusDto, type CreateTaskDto } from '@/api/Api'
 import TaskCard from '@/components/task.vue'
 import { useTasksStore } from '@/stores/tasks.store'
+import { useProjectStore } from '@/stores/projects.store'
 import { NSelect, useDialog, NButton } from 'naive-ui'
 import AddtaskModal from '@/components/addtaskModal.vue'
 
@@ -37,12 +38,14 @@ export default defineComponent({
 
     setup() {
         const tasksStore = useTasksStore()
+        const projectStore = useProjectStore()
         const dialog = useDialog()
-        return { tasksStore, dialog }
+        return { tasksStore, projectStore, dialog }
     },
 
     mounted() {
         this.tasksStore.fetchTasks()
+        this.projectStore.fetchProjects()
     },
 
     data() {
@@ -85,10 +88,11 @@ export default defineComponent({
                 this.tasksStore.updateTaskStatus(task.id, task.status)
             }
 
-            if (oldTask.title !== task.title || oldTask.description !== task.description) {
+            if (oldTask.title !== task.title || oldTask.description !== task.description || oldTask.projectId !== task.projectId) {
                 this.tasksStore.updateTask(task.id, {
                     title: task.title,
-                    description: task.description
+                    description: task.description,
+                    projectId: task.projectId
                 })
             }
         },
@@ -105,7 +109,7 @@ export default defineComponent({
 })
 </script>
 
-<style>
+<style scoped>
 .tasks-wrapper {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

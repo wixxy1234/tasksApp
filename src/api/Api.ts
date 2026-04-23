@@ -329,6 +329,9 @@ export class HttpClient<SecurityDataType = unknown> {
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
+    static projectsCreate() {
+        throw new Error('Method not implemented.');
+    }
   api = {
     /**
      * No description
@@ -698,4 +701,5 @@ export class Api<
         ...params,
       }),
   };
+    static projectsList: any;
 }

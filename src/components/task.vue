@@ -2,6 +2,7 @@
     <n-card class="task-card" content-scrollable segmented closable @close="deleteTask">
         <div class="card-header">
             <h3 class="card-title">{{ task.title }}</h3>
+            <span class="taskProject" v-if="projectName">Проект: {{ projectName }}</span>
             <span class="card-status" :class="`status-${task.status}`">
                 {{ getStatusText(task.status) }}
             </span>
@@ -23,6 +24,7 @@
     <EditTaskModal
         :show="showEditModal"
         :task="task"
+        :projects="projectsStore.projects"
         @update:show="showEditModal = $event"
         @save="saveTask"
     />
@@ -33,6 +35,7 @@ import { defineComponent } from 'vue'
 import { NCard, NButton, useMessage } from 'naive-ui'
 import type { TaskDto } from '@/api/Api'
 import EditTaskModal from './editTaskModal.vue'
+import { useProjectStore } from '@/stores/projects.store';
 
 export default defineComponent({
     name: "TaskCard",
@@ -43,10 +46,21 @@ export default defineComponent({
             required: true
         }
     },
+    setup(){
+        const projectsStore = useProjectStore()
+        return { projectsStore }
+    },
     emits: ['deleteTask', 'update-task'],
     data() {
         return {
             showEditModal: false
+        }
+    },
+    computed: {
+        projectName() {
+            if (!this.task.projectId) return null
+            const project = this.projectsStore.projects.find((p: any) => p.id === this.task.projectId)
+            return project?.name || null
         }
     },
     methods: {
