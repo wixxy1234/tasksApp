@@ -1,7 +1,7 @@
 <template>
-    <n-modal preset="card" title="Редактировать задачу" :show="show" @update:show="$emit('update:show', $event)"
+    <n-modal preset="card" title="Редактировать проект" :show="show" @update:show="$emit('update:show', $event)"
         style="width: 500px">
-        <n-form ref="formRef" :model="formData" :rules="updateTaskRules">
+        <n-form ref="formRef" :model="formData" :rules="updateProjectRules">
             <n-form-item label="Название проекта" path="name">
                 <n-input v-model:value="formData.name" />
             </n-form-item>
@@ -22,12 +22,12 @@
 
 <script lang="ts">
 import { defineComponent, watch } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NSelect, NButton, type FormRules } from 'naive-ui'
-import type { TaskStatusDto, TaskDto, ProjectDto } from '@/api/Api';
+import { NModal, NForm, NFormItem, NInput, NButton, type FormRules } from 'naive-ui'
+import type { ProjectDto } from '@/api/Api';
 
 export default defineComponent({
     name: 'EditProjectModal',
-    components: { NModal, NForm, NFormItem, NInput, NSelect, NButton },
+    components: { NModal, NForm, NFormItem, NInput, NButton },
     props: {
         show: { type: Boolean, required: true },
         project: { type: Object as () => ProjectDto, required: true }
@@ -51,9 +51,9 @@ export default defineComponent({
         }
     },
     computed: {
-        updateTaskRules(): FormRules {
+        updateProjectRules(): FormRules {
             return {
-                title: [{ required: true, message: 'Введите название', trigger: 'blur' }]
+                name: [{ required: true, message: 'Введите название', trigger: 'blur' }]
             }
         }
     },

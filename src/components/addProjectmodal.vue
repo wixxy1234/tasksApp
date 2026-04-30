@@ -21,13 +21,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch } from 'vue'
-import { NModal, NForm, NFormItem, NInput, NSelect, NButton, type FormRules } from 'naive-ui'
-import { TaskStatusDto, type TaskDto } from '@/api/Api'
+import { defineComponent } from 'vue'
+import { NModal, NForm, NFormItem, NInput, NButton, type FormRules } from 'naive-ui'
 
 export default defineComponent({
-    name: 'addTaskModal',
-    components: { NModal, NForm, NFormItem, NInput, NSelect, NButton },
+    name: 'addProjectModal',
+    components: { NModal, NForm, NFormItem, NInput, NButton },
     props: {
         isOpen: { type: Boolean, required: true },
     },

@@ -1,6 +1,3 @@
-<style scoped>
-</style>
-
 <template>
     <div class="nav-wrapper">
         <n-menu v-model:value="activeKey" mode="horizontal" :options="computedMenuOptions"
@@ -55,7 +52,7 @@ export default defineComponent({
             const options = [...this.baseMenuOptions]
 
             if (this.authStore.isAdmin) {
-                options.push({ label: 'Аналитика', key: 'admin-dashboard' })
+                options.push({ label: 'Аналитика', key: 'analytics' })
             }
 
             return options

@@ -8,17 +8,56 @@ export const useTasksStore = defineStore('tasks', {
         tasks: [] as TaskDto[],
         loading: false,
         error: null as string | null,
-        filterStatus: '' as string
+        currentStatus: '' as string,
+        currentProjectId: '' as string,
+        offset: 0,
+        limit: 16,
+        totalCount: 0
     }),
-
+    getters: {
+        hasMore: (state) => state.offset + state.limit < state.totalCount
+    },
     actions: {
-        async fetchTasks(){
+        async fetchTasks(status?: string, projectId?: string){
             this.loading = true
             this.error = null
-
+            this.offset = 0
+            this.currentStatus = status || ''
+            this.currentProjectId = projectId || ''
             try {
-                const response = await taskService.getTasks()
+                const params: any = {offset: 0, limit: this.limit}
+                if (this.currentStatus) { params.status = this.currentStatus }
+                if (this.currentProjectId) { params.projectId = this.currentProjectId }
+
+                const response = await taskService.getTasks(params)
                 this.tasks = response.items || []
+                this.totalCount = response.totalCount
+            } catch (error: any) {
+                console.error(error)
+                this.error = error?.response?.data || 'Ошибка при загрузке задач'
+            } finally {
+                this.loading = false
+            }
+        },
+
+        async getMoreTasks(){
+            if (!this.hasMore || this.loading) return 
+
+            this.loading = true
+            this.error = null
+            try {
+                const newOffset = this.offset + this.limit
+                const params: any = {limit: this.limit, offset: newOffset}
+                if (this.currentStatus) { params.status = this.currentStatus }
+                if (this.currentProjectId) { params.projectId = this.currentProjectId }
+
+                const response = await taskService.getTasks(params)
+                const newTasks = response.items || []
+
+                this.tasks.push(...newTasks)
+                this.offset = newOffset
+                this.totalCount = response.totalCount
+
             } catch (error: any) {
                 console.error(error)
                 this.error = error?.response?.data || 'Ошибка при загрузке задач'

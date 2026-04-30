@@ -9,13 +9,12 @@ export const useAuthStore = defineStore('auth', {
     }),
 
     getters: {
-        isAdmin: (state) => state.user?.role === 'ADMIN'
+        isAdmin: (state) => state.user?.role === 'Admin'
     },
 
     actions: {
         setToken(newToken: string){
             this.token = newToken;
-            console.log('Токен сохранен:', newToken)
         },
         setLoading(status: boolean) {
             this.loading = status
@@ -32,12 +31,8 @@ export const useAuthStore = defineStore('auth', {
                     localStorage.setItem('token', response.token)
                 }
 
-                console.log('Успешный вход: ', response.user)
-
                 return true
             } catch (error: any){
-                console.log('Ошибка входа: ', error?.response?.data || error)
-
                 return false
             } finally {
                 this.setLoading(false)  
@@ -56,29 +51,24 @@ export const useAuthStore = defineStore('auth', {
                     localStorage.setItem('token', response.token)
                 }
 
-                console.log('Успешная регистрация:', this.user)
-
                 return true
 
             } catch (error: any) {
-                console.log('Ошибка регистрации:', error?.response?.data || error)
                 return false
             } finally {
                 this.setLoading(false)
             }
         },
-        checkAuth(){
+        async checkAuth() {
             const token = localStorage.getItem('token')
-
-            if (token){
-                this.token = token
-                 // TODO: позже получим реальные данные пользователя по токену
-                this.user = { id: 1, email: 'user@example.com', role: 'USER' }
-
+            if (!token) return false
+            this.token = token
+            try {
+                const user = await authService.getMe()
+                this.user = user
                 return true
-            } else {
-                console.log('нет токена')
-
+            } catch {
+                this.logout()
                 return false
             }
         },
@@ -86,8 +76,8 @@ export const useAuthStore = defineStore('auth', {
             this.user = null
             this.token = null
             localStorage.removeItem('token')
-            console.log('Выход выполнен')
         },
+        
     }
     
 })

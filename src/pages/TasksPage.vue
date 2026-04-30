@@ -1,25 +1,31 @@
 <template>
-
-    <div class="loading" v-if="tasksStore.loading">Загрузка</div>
-
-    <div v-else-if="tasksStore.error" style="color: red;">
+    <div v-if="tasksStore.error" class="error-message">
         {{ tasksStore.error }}
     </div>
-    <div class="filter_and_btn">
-        <n-select v-model:value="filterStatus" :options="filterOptions" style="width: 200px; margin-bottom: 20px;" />
-        <n-button strong secondary round type="info" @click="showAddTaskModal">Добавить задачу +</n-button>
-    </div>
+    <n-spin :show="tasksStore.loading" description="Загрузка...">
+        <div class="page-header">
+            <h3>Задачи</h3>
+            <n-button strong secondary round type="info" @click="showAddTaskModal">Добавить задачу +</n-button>
+        </div>
+        <FiltersPanel :filterStatus="filterStatus" :filterProjectId="filterProjectId"
+            :projects="projectStore.projects" @update:filter-status="onStatusFilterChange"
+            @update:filter-project-id="onProjectFilterChange" />
 
-    <div class="emptyTask" v-if="filteredTasks.length === 0">
-        <h2>Нет задач</h2>
-    </div>
-    <div class="tasks-wrapper">
-        <TaskCard v-for="task in filteredTasks" :key="task.id" :task="task" @delete-task="deleteTaskFromArr"
-            @update-task="updateTaskFromArr">
-        </TaskCard>
-    </div>
+        <div class="empty-state" v-if="tasksStore.tasks.length === 0">
+            <h2>Нет задач</h2>
+            <p class="empty-state-hint">Создайте первую задачу, нажав кнопку выше</p>
+        </div>
+        <div class="tasks-wrapper">
+            <TaskCard v-for="task in tasksStore.tasks" :key="task.id" :task="task" @delete-task="deleteTaskFromArr"
+                @update-task="updateTaskFromArr">
+            </TaskCard>
+        </div>
 
-    <AddtaskModal :isOpen="openAddTaskModal" :projects="projectStore.projects" @update:show="openAddTaskModal = $event" @save-new-task="createNewTask"></AddtaskModal>
+        <div ref="sentinel" class="sentinel"></div>
+    </n-spin>
+
+    <AddtaskModal :isOpen="openAddTaskModal" :projects="projectStore.projects" @update:show="openAddTaskModal = $event"
+        @save-new-task="createNewTask"></AddtaskModal>
 
 </template>
 
@@ -29,12 +35,13 @@ import { TaskStatusDto, type CreateTaskDto } from '@/api/Api'
 import TaskCard from '@/components/task.vue'
 import { useTasksStore } from '@/stores/tasks.store'
 import { useProjectStore } from '@/stores/projects.store'
-import { NSelect, useDialog, NButton } from 'naive-ui'
+import { useDialog, NButton, NSpin } from 'naive-ui'
 import AddtaskModal from '@/components/addtaskModal.vue'
+import FiltersPanel from '@/components/FiltersPanel.vue'
 
 
 export default defineComponent({
-    components: { TaskCard, NSelect, NButton, AddtaskModal },
+    components: { TaskCard, NButton, AddtaskModal, FiltersPanel, NSpin },
 
     setup() {
         const tasksStore = useTasksStore()
@@ -46,29 +53,42 @@ export default defineComponent({
     mounted() {
         this.tasksStore.fetchTasks()
         this.projectStore.fetchProjects()
+        this.sentinelObserver = new IntersectionObserver((entries) => {
+            if (entries[0]?.isIntersecting && this.tasksStore.hasMore && !this.tasksStore.loading) {
+                this.tasksStore.getMoreTasks()
+            }
+        })
+        this.sentinelObserver.observe(this.$refs.sentinel as Element)
+    },
+    beforeUnmount() {
+        this.sentinelObserver?.disconnect()
     },
 
     data() {
         return {
-            filterOptions: [
-                { label: 'Все', value: '' },
-                ...Object.values(TaskStatusDto).map(s => ({ label: s, value: s }))
-            ],
             filterStatus: '',
-            openAddTaskModal: false
+            filterProjectId: '',
+            openAddTaskModal: false,
+            sentinelObserver: null as IntersectionObserver | null
         }
     },
 
-    computed: {
-        filteredTasks() {
-            if (!this.filterStatus) {
-                return this.tasksStore.tasks
-            }
-            return this.tasksStore.tasks.filter((t: any) => t.status === this.filterStatus)
+    watch: {
+        filterStatus(val) {
+            this.tasksStore.fetchTasks(val || undefined, this.filterProjectId || undefined)
+        },
+        filterProjectId(val) {
+            this.tasksStore.fetchTasks(this.filterStatus || undefined, val || undefined)
         }
     },
 
     methods: {
+        onStatusFilterChange(val: string) {
+            this.filterStatus = val
+        },
+        onProjectFilterChange(val: string) {
+            this.filterProjectId = val
+        },
         deleteTaskFromArr(id: string) {
             this.dialog.error({
                 title: 'Подтверждение удаления',
@@ -96,10 +116,10 @@ export default defineComponent({
                 })
             }
         },
-        showAddTaskModal(){
+        showAddTaskModal() {
             this.openAddTaskModal = true
         },
-        createNewTask(newTask: CreateTaskDto){
+        createNewTask(newTask: CreateTaskDto) {
             this.tasksStore.createTask(newTask);
             this.openAddTaskModal = false
 
@@ -110,6 +130,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
 .tasks-wrapper {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -120,5 +147,26 @@ export default defineComponent({
 .filter_and_btn {
     display: flex;
     justify-content: space-between;
+}
+
+.sentinel {
+    height: 1px;
+}
+
+.empty-state {
+    text-align: center;
+    margin-top: 60px;
+    color: #999;
+}
+
+.empty-state h2 {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #999;
+}
+
+.empty-state-hint {
+    font-size: 14px;
+    color: #bbb;
 }
 </style>

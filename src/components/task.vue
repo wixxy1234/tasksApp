@@ -32,10 +32,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { NCard, NButton, useMessage } from 'naive-ui'
+import { NCard, NButton } from 'naive-ui'
 import type { TaskDto } from '@/api/Api'
 import EditTaskModal from './editTaskModal.vue'
-import { useProjectStore } from '@/stores/projects.store';
+import { useProjectStore } from '@/stores/projects.store'
+import { getStatusText } from '@/utils/statusMap'
 
 export default defineComponent({
     name: "TaskCard",
@@ -68,14 +69,7 @@ export default defineComponent({
             const idTask = this.task.id
             this.$emit('deleteTask', idTask)
         },
-        getStatusText(status: string) {
-            const statusMap: Record<string, string> = {
-                Todo: 'К выполнению',
-                InProgress: 'В работе',
-                Done: 'Выполнено'
-            }
-            return statusMap[status] || status
-        },
+        getStatusText,
         openEditModal() {
             this.showEditModal = true
         },
@@ -86,10 +80,9 @@ export default defineComponent({
     },
 })
 </script>
-<style>
-.taskItem {
-    max-height: 300px;
-    max-width: 300px;
+<style scoped>
+.task-card {
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .task-card:hover {
@@ -135,7 +128,7 @@ export default defineComponent({
 }
 
 .status-Done {
-    background-color: #ebfadb;
+    background-color: rgba(24, 160, 88, 0.16);
     color: #54bd20;
 }
 

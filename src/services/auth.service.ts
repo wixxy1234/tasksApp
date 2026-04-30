@@ -1,5 +1,5 @@
-import type { LoginDto, RegisterDto, AuthResponseDto } from '@/api/Api'
-import { publicApiClient } from './apiClient'
+import type { LoginDto, RegisterDto, AuthResponseDto, UserDto } from '@/api/Api'
+import { apiClient, publicApiClient } from './apiClient'
 
 export const authService = {
     async login(email: string, password: string): Promise<AuthResponseDto> {
@@ -14,7 +14,8 @@ export const authService = {
         return response.data
     },
 
-    logout() {
-        localStorage.removeItem('token')
+    async getMe(): Promise<UserDto>{
+        const response = await apiClient.api.authMeList()
+        return response.data
     }
 } 

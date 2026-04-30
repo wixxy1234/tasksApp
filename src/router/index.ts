@@ -5,6 +5,10 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
   {
+    path: '/',
+    redirect: '/tasks'
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/pages/AuthPage.vue')
@@ -26,19 +30,34 @@ const router = createRouter({
     component: () => import('@/pages/projectsPage.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/analytics',
+    name: 'Analytics',
+    component: () => import('@/pages/AdminDashboardPage.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/pages/profilePage.vue'),
+    meta: { requiresAuth: true }
+  },
 ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  const isAuth = !!authStore.token
-
-  if (to.meta.requiresAuth && !isAuth){
-    next("/login")
-  } else {
-    next()
-  }
-
+  if (authStore.token && !authStore.user) {
+      await authStore.checkAuth()
+    }
+    const isAuth = !!authStore.token
+    if (to.meta.requiresAuth && !isAuth) {
+      next('/login')
+    } else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+      next('/tasks')
+    } else {
+      next()
+    }
 })
 
 export default router

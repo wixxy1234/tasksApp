@@ -1,5 +1,5 @@
 <template>
-    <span class="task-chip">
+    <span class="task-chip"  :class="`status-${task.status}`">
         <span class="task-chip-title">{{ task.title }}</span>
         <span class="task-chip-close" @click="$emit('remove', task.id)">&times;</span>
     </span>
@@ -49,5 +49,19 @@ export default defineComponent({
 
 .task-chip-close:hover {
     color: #e04040;
+}
+.status-Todo {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.status-InProgress {
+    background-color: #e6f7ff;
+    color: #1890ff;
+}
+
+.status-Done {
+    background-color: rgba(24, 160, 88, 0.16);
+    color: #54bd20;
 }
 </style>

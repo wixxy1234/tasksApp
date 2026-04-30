@@ -19,7 +19,7 @@ services:
       retries: 5
 
   api:
-    image: ghcr.io/nuadolos/task-manager:11d1f9b
+    image: ghcr.io/nuadolos/task-manager:7a34222
     container_name: taskmanager-api
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=taskmanager;Username=taskmanager;Password=taskmanager_secret;Timeout=15;SSL Mode=Prefer;Trust Server Certificate=true

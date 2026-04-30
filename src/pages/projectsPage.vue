@@ -1,23 +1,26 @@
 <template>
-    <div class="loading" v-if="projectStore.loading">Загрузка</div>
 
-    <div v-else-if="projectStore.error" style="color: red;">
+    <div v-if="projectStore.error" class="error-message">
         {{ projectStore.error }}
     </div>
+    <n-spin :show="projectStore.loading" description="Загрузка...">
+        <div class="filter_and_btn">
+            <h3>Проекты</h3>
+            <n-button strong secondary round type="info" @click="openAddProjectModal">Добавить проект +</n-button>
+        </div>
 
-    <div class="filter_and_btn">
-        <h3>Проекты</h3>
-        <n-button strong secondary round type="primary" @click="openAddProjectModal">Добавить проект +</n-button>
-    </div>
-
-    <div class="emptyProject" v-if="projectStore.projects.length === 0">
-        <h2>Нет проектов</h2>
-    </div>
-    <div class="projects-wrapper">
-        <projectCard v-for="project in projectStore.projects" :key="project.id" :project="project" @delete-project="deleteProject" @update-project="updateProject" @remove-task="removeTaskFromProject"></projectCard>
-    </div>
-
-    <AddProjectmodal :isOpen="addProjectModalIsOpen" @update:show="addProjectModalIsOpen = $event" @save-new-project="addProject"></AddProjectmodal>
+        <div class="empty-state" v-if="projectStore.projects.length === 0">
+            <h2>Нет проектов</h2>
+            <p class="empty-state-hint">Создайте первый проект, нажав кнопку выше</p>
+        </div>
+        <div class="projects-wrapper">
+            <projectCard v-for="project in projectStore.projects" :key="project.id" :project="project"
+                @delete-project="deleteProject" @update-project="updateProject" @remove-task="removeTaskFromProject">
+            </projectCard>
+        </div>
+    </n-spin>
+    <AddProjectmodal :isOpen="addProjectModalIsOpen" @update:show="addProjectModalIsOpen = $event"
+        @save-new-project="addProject"></AddProjectmodal>
 
 </template>
 
@@ -27,12 +30,12 @@ import AddProjectmodal from '@/components/addProjectmodal.vue';
 import projectCard from '@/components/project.vue';
 import { useProjectStore } from '@/stores/projects.store';
 import { useTasksStore } from '@/stores/tasks.store';
-import { NButton, useDialog } from 'naive-ui';
+import { NButton, useDialog, NSpin } from 'naive-ui';
 import { defineComponent } from 'vue';
 
 
 export default defineComponent({
-    components: { projectCard, NButton, AddProjectmodal },
+    components: { projectCard, NButton, AddProjectmodal, NSpin },
     setup() {
         const projectStore = useProjectStore()
         const tasksStore = useTasksStore()
@@ -45,14 +48,14 @@ export default defineComponent({
         }
     },
     methods: {
-        openAddProjectModal(){
+        openAddProjectModal() {
             this.addProjectModalIsOpen = true
         },
-        addProject(data: CreateProjectDto){
+        addProject(data: CreateProjectDto) {
             this.projectStore.createProject(data)
             this.addProjectModalIsOpen = false
         },
-        deleteProject(id: string){
+        deleteProject(id: string) {
             this.dialog.error({
                 title: 'Подтверждение удаления',
                 content: 'Вы уверены, что хотите удалить этот проект?',
@@ -63,7 +66,7 @@ export default defineComponent({
                 }
             })
         },
-        updateProject(project: ProjectDto){
+        updateProject(project: ProjectDto) {
             const oldProject = this.projectStore.projects.find((t: any) => t.id === project.id)
             if (!oldProject) return
 
@@ -75,7 +78,7 @@ export default defineComponent({
                 })
             }
         },
-        removeTaskFromProject(taskId: string){
+        removeTaskFromProject(taskId: string) {
             const task = this.tasksStore.tasks.find((t: any) => t.id === taskId)
             if (!task) return
             this.tasksStore.updateTask(taskId, { title: task.title, projectId: null })
@@ -106,5 +109,22 @@ export default defineComponent({
 .filter_and_btn {
     display: flex;
     justify-content: space-between;
+}
+
+.empty-state {
+    text-align: center;
+    margin-top: 60px;
+    color: #999;
+}
+
+.empty-state h2 {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #999;
+}
+
+.empty-state-hint {
+    font-size: 14px;
+    color: #bbb;
 }
 </style>

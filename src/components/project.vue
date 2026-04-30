@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { NCard, NButton, useMessage } from 'naive-ui'
+import { NCard, NButton } from 'naive-ui'
 import type { ProjectDto } from '@/api/Api'
 import EditProjectModal from './editProjectModal.vue'
 import ProjectTaskChip from './projectTaskChip.vue'
@@ -82,10 +82,9 @@ export default defineComponent({
     },
 })
 </script>
-<style>
-.taskItem {
-    max-height: 300px;
-    max-width: 300px;
+<style scoped>
+.task-card {
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .task-card:hover {
@@ -112,14 +111,6 @@ export default defineComponent({
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-.card-status {
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    white-space: nowrap;
-}
-
 
 .card-description {
     margin: 20px 0;
